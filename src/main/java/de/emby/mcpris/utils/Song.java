@@ -1,14 +1,17 @@
 package de.emby.mcpris.utils;
 
+import com.sun.jna.platform.win32.OaIdl;
+import net.neoforged.neoforge.common.ModConfigSpec;
+
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 public final class Song {
 
-    public record Track(String artist, String title, String album) {
+    public record Track(String artist, String title, String album, Boolean playing) {
         public static Track empty() {
-            return new Track("", "", "");
+            return new Track("", "", "", false);
         }
     }
 
@@ -33,12 +36,16 @@ public final class Song {
         return CURRENT.get().album();
     }
 
-    public static void updateMetadata(Map<String, ?> metadata) {
+    public static Boolean getPlaying() {
+        return CURRENT.get().playing();
+    }
+
+    public static void updateMetadata(Map<String, ?> metadata, Boolean playing) {
         String artist = firstArtist(metadata.get("xesam:artist"));
         String title = stringValue(metadata.get("xesam:title"));
         String album = stringValue(metadata.get("xesam:album"));
 
-        CURRENT.set(new Track(artist, title, album));
+        CURRENT.set(new Track(artist, title, album, playing));
     }
 
     public static void reset() {

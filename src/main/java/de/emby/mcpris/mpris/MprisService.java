@@ -123,7 +123,7 @@ public final class MprisService {
         if (selectedPlayer == null) {
             Song.reset();
         } else {
-            Song.updateMetadata(selectedMetadata);
+            Song.updateMetadata(selectedMetadata, selectedPlaying);
         }
     }
 

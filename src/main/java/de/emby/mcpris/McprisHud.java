@@ -3,6 +3,7 @@ package de.emby.mcpris;
 import de.emby.mcpris.utils.Color;
 import de.emby.mcpris.config.Config;
 import de.emby.mcpris.utils.Song;
+import de.emby.mcpris.utils.Sound;
 import de.emby.mcpris.utils.Text;
 import net.minecraft.client.Minecraft;
 import net.neoforged.api.distmarker.Dist;
