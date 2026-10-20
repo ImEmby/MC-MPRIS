@@ -24,6 +24,8 @@ public class Mcpris {
 
         NeoForge.EVENT_BUS.register(this);
 
+        NeoForge.EVENT_BUS.register(ClientCommands.class);
+
         modContainer.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
     }
 

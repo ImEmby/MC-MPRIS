@@ -2,9 +2,11 @@ package de.emby.mcpris.mpris;
 
 import de.emby.mcpris.Mcpris;
 import de.emby.mcpris.utils.Song;
+import org.freedesktop.dbus.annotations.DBusInterfaceName;
 import org.freedesktop.dbus.connections.impl.DBusConnection;
 import org.freedesktop.dbus.connections.impl.DBusConnectionBuilder;
 import org.freedesktop.dbus.interfaces.DBus;
+import org.freedesktop.dbus.interfaces.DBusInterface;
 import org.freedesktop.dbus.interfaces.Properties;
 import org.freedesktop.dbus.messages.MethodCall;
 import org.freedesktop.dbus.types.Variant;
@@ -24,15 +26,28 @@ public final class MprisService {
     private static final String PLAYER_INTERFACE = "org.mpris.MediaPlayer2.Player";
 
     private static final String DBUS_BUS_NAME = "org.freedesktop.DBus";
-    private static final String DBUS_OBJECT_PATH = "/org/freedesktop/DBus";
+    private static final String DBUS_OBJECT_PATH ="/org/freedesktop/DBus";
 
     private static final Semaphore WAKEUP = new Semaphore(0);
 
     private static volatile boolean running;
     private static volatile DBusConnection connection;
+    private static volatile String selectedPlayerName;
+    private static volatile boolean currentPlaying;
+
     private static Thread worker;
 
     private MprisService() {}
+
+    @DBusInterfaceName(PLAYER_INTERFACE)
+    public interface PlayerControl extends DBusInterface {
+        void Play();
+        void Pause();
+        void PlayPause();
+        void Stop();
+        void Next();
+        void Previous();
+    }
 
     public static synchronized void start() {
         if (running) {
@@ -88,6 +103,8 @@ public final class MprisService {
             Mcpris.LOGGER.warn("MPRIS: media integration is unavailable, the HUD will stay empty", error);
         } finally {
             connection = null;
+            selectedPlayerName = null;
+            currentPlaying = false;
             Song.reset();
 
             if (conn != null) {
@@ -121,9 +138,102 @@ public final class MprisService {
         }
 
         if (selectedPlayer == null) {
+            selectedPlayerName = null;
+            currentPlaying = false;
             Song.reset();
         } else {
+            selectedPlayerName = selectedPlayer;
+            currentPlaying = selectedPlaying;
+
             Song.updateMetadata(selectedMetadata, selectedPlaying);
+        }
+    }
+
+    public static void setPlaying(boolean playing) {
+        DBusConnection conn = connection;
+        String player = selectedPlayerName;
+
+        if (conn == null || player == null) {
+            Mcpris.LOGGER.debug("MPRIS: no media player selected");
+            return;
+        }
+
+        try {
+            PlayerControl control = conn.getRemoteObject(
+                    player,
+                    OBJECT_PATH,
+                    PlayerControl.class,
+                    false
+            );
+
+            if (playing) {
+                control.Play();
+            } else {
+                control.Pause();
+            }
+
+            WAKEUP.release();
+        } catch (Throwable error) {
+            Mcpris.LOGGER.warn(
+                    "MPRIS: failed to change playback state",
+                    error
+            );
+        }
+    }
+
+    public static void togglePlayback() {
+        setPlaying(!currentPlaying);
+    }
+
+    public static void stopPlayback() {
+        DBusConnection conn = connection;
+        String player = selectedPlayerName;
+
+        if (conn == null || player == null) {
+            Mcpris.LOGGER.debug("MPRIS: no media player selected");
+            return;
+        }
+
+        try {
+            PlayerControl control = conn.getRemoteObject(player, OBJECT_PATH, PlayerControl.class, false);
+
+            control.Stop();
+            WAKEUP.release();
+
+        } catch (Throwable error) {
+            Mcpris.LOGGER.warn("MPRIS: failed to stop playback", error);
+        }
+    }
+
+    public static void nextTrack() {
+        sendTrackCommand(true);
+    }
+
+    public static void previousTrack() {
+        sendTrackCommand(false);
+    }
+
+    private static void sendTrackCommand(boolean next) {
+        DBusConnection conn = connection;
+        String player = selectedPlayerName;
+
+        if (conn == null || player == null) {
+            Mcpris.LOGGER.debug("MPRIS: no media player selected");
+            return;
+        }
+
+        try {
+            PlayerControl control = conn.getRemoteObject(player, OBJECT_PATH, PlayerControl.class, false);
+
+            if (next) {
+                control.Next();
+            } else {
+                control.Previous();
+            }
+            WAKEUP.release();
+
+        } catch (Throwable error) {
+            Mcpris.LOGGER.warn("MPRIS: failed to change track", error);
         }
     }
 
@@ -139,6 +249,7 @@ public final class MprisService {
             }
 
             return players;
+
         } catch (Throwable error) {
             Mcpris.LOGGER.debug("MPRIS: could not list the bus names", error);
             return List.of();
@@ -187,7 +298,7 @@ public final class MprisService {
             Object entryValue = entry.getValue();
             metadata.put(
                     String.valueOf(entry.getKey()),
-                    entryValue instanceof Variant<?> variant ? variant.getValue() : entryValue);
+                    entryValue instanceof Variant<?> variant ? variant.getValue() : entryValue );
         }
 
         return metadata;

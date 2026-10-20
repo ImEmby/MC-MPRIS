@@ -1,8 +1,5 @@
 package de.emby.mcpris.utils;
 
-import com.sun.jna.platform.win32.OaIdl;
-import net.neoforged.neoforge.common.ModConfigSpec;
-
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
@@ -36,7 +33,7 @@ public final class Song {
         return CURRENT.get().album();
     }
 
-    public static Boolean getPlaying() {
+    public static boolean getPlaying() {
         return CURRENT.get().playing();
     }
 
