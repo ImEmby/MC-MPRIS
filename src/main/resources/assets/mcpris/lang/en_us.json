@@ -26,5 +26,6 @@
   "mcpris.configuration.elide": "Elide",
   "mcpris.configuration.use_dynamic_width": "Use dynamic width",
   "mcpris.configuration.use_dynamic_height": "Use dynamic height",
-  "mcpris.configuration.use_dynamic_line_spacing": "Use dynamic line spacing"
+  "mcpris.configuration.use_dynamic_line_spacing": "Use dynamic line spacing",
+  "mcpris.configuration.polling_rate": "Polling rate"
 }

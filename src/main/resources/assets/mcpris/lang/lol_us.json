@@ -26,5 +26,6 @@
   "mcpris.configuration.elide": "Elidez",
   "mcpris.configuration.use_dynamic_width": "Uzze dynamiq widthz",
   "mcpris.configuration.use_dynamic_height": "Uzze dynamiq heightz",
-  "mcpris.configuration.use_dynamic_line_spacing": "Uzze dynamiq linez spaycing"
+  "mcpris.configuration.use_dynamic_line_spacing": "Uzze dynamiq linez spaycing",
+  "mcpris.configuration.polling_rate": "Pawlling rayte"
 }

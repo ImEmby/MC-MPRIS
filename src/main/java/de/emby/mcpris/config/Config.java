@@ -85,6 +85,10 @@ public class Config {
             .comment(" Default: true")
             .define("use_dynamic_line_spacing", true);
 
+    public static final ModConfigSpec.DoubleValue polling_rate = BUILDER
+            .comment(" Polling rate for the in-game music muting in seconds")
+            .defineInRange("polling_rate", 3.0, 0.0, 30.0);
+
     public static final ModConfigSpec SPEC = BUILDER.build();
 
     private static boolean validateItemName(final Object obj) {

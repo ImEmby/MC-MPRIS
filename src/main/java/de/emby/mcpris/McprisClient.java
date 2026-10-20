@@ -1,5 +1,6 @@
 package de.emby.mcpris;
 
+import de.emby.mcpris.config.Config;
 import de.emby.mcpris.config.PositionConfigSectionScreen;
 import de.emby.mcpris.mpris.MprisService;
 import de.emby.mcpris.utils.Song;
@@ -43,7 +44,9 @@ public class McprisClient {
 
     @SubscribeEvent
     static void onClientTick(ClientTickEvent.Post event) {
-        if (++tickCounter >= 20) {
+        int polling_rate = (int) (Config.polling_rate.get() * 20);
+
+        if (++tickCounter >= polling_rate) {
             tickCounter = 0;
 
             if (Song.getPlaying()) {
