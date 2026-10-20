@@ -27,7 +27,7 @@ sourceSets.main.resources {
 }
 
 repositories {
-    // Add here additional repositories if required by some of the dependencies below.
+    mavenCentral()
 }
 
 base {
@@ -116,27 +116,27 @@ configurations {
 }
 
 dependencies {
-    // Example optional mod dependency with JEI
-    // The JEI API is declared for compile time use, while the full JEI artifact is used at runtime
-    // compileOnly "mezz.jei:jei-${mc_version}-common-api:${jei_version}"
-    // compileOnly "mezz.jei:jei-${mc_version}-neoforge-api:${jei_version}"
-    // We add the full version to localRuntime, not runtimeOnly, so that we do not publish a dependency on it
-    // localRuntime "mezz.jei:jei-${mc_version}-neoforge:${jei_version}"
+    var dbusVersion = "5.2.2"
 
-    // Example mod dependency using a mod jar from ./libs with a flat dir repository
-    // This maps to ./libs/coolmod-${mc_version}-${coolmod_version}.jar
-    // The group id is ignored when searching -- in this case, it is "blank"
-    // implementation "blank:coolmod-${mc_version}:${coolmod_version}"
+    // Compile-time / mod classpath.
+    implementation("com.github.hypfvieh:dbus-java-core:${dbusVersion}") {
+        exclude group: "org.slf4j", module: "slf4j-api"
+    }
 
-    // Example mod dependency using a file as dependency
-    // implementation files("libs/coolmod-${mc_version}-${coolmod_version}.jar")
+    runtimeOnly("com.github.hypfvieh:dbus-java-transport-junixsocket:${dbusVersion}") {
+        exclude group: "org.slf4j", module: "slf4j-api"
+    }
 
-    // Example project dependency using a sister or child project:
-    // implementation project(":myproject")
+    // NeoForge 1.21.x dev runs only load plain libraries (those without an FMLModType
+    // manifest entry) from the 'additionalRuntimeClasspath' configuration, so the D-Bus
+    // libraries have to be declared there as well or they are missing at runtime.
+    additionalRuntimeClasspath("com.github.hypfvieh:dbus-java-core:${dbusVersion}") {
+        exclude group: "org.slf4j", module: "slf4j-api"
+    }
 
-    // For more info:
-    // http://www.gradle.org/docs/current/userguide/artifact_dependencies_tutorial.html
-    // http://www.gradle.org/docs/current/userguide/dependency_management.html
+    additionalRuntimeClasspath("com.github.hypfvieh:dbus-java-transport-junixsocket:${dbusVersion}") {
+        exclude group: "org.slf4j", module: "slf4j-api"
+    }
 }
 
 // This block of code expands all declared replace properties in the specified resource targets.
